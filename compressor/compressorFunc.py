@@ -6,6 +6,7 @@ Spyder Editor
 This is a temporary script file.
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 #Datos geometricos del compresor
 alpha1 = 32 # Grados
@@ -59,7 +60,7 @@ def calcP03(T1, P1, massFlux, psi, eta_c, omega = None, method='saravanamutto'):
     Cx1 = massFlux/(rho1*A1)
     M1 = Cx1/speedSound(T1)
     if M1 >= 0.3: 
-        print(Cx1)
+        pass
         
     if omega == None:
         omega = getOmega(massFlux)
@@ -69,7 +70,7 @@ def calcP03(T1, P1, massFlux, psi, eta_c, omega = None, method='saravanamutto'):
     T01 = T1 + (Cx1**2)/(2*Cp*1000)
     P01 = P1 * ((T01/T1)**(k/(k-1)))
     
-    print(M1, '-->', T01)
+    print('Mach: ', M1, '-->', 'T1 estancamiento' ,T01)
     Mu = U2/speedSound(T01)
     if method == 'saravanamutto':
         P03_P01 = (1 + (eta_c*psi*sigma*U2**2)/(Cp*T01*1000))**(k/(k-1))
@@ -92,7 +93,24 @@ def getMassFlux(rpm):
 
     
     
+def getCompressorPerformancePlot(T1, P1, massFlux, omega, psi, eta_c):
     
+    fig, ax = plt.subplots(figsize=(10, 6))
+    fig.suptitle(f'Diagrama de desempeño del compresor  \psi = {psi}')
+    
+    
+    for w in omega:
+        pressures_3 =[]
+        for i in massFlux:
+            pressures_3.append(calcP03(T1, P1, i, psi, eta_c, w*(np.pi*2/60)))
+        line, = ax.plot(massFlux, pressures_3, color='k', linewidth = 1)
+        ax.annotate(f'{int(w)} rpm', xy=(0.3, pressures_3[1]))
+    ax.grid(color='k', linestyle=':', linewidth=1)
+    ax.set_ylabel('Relación de Presion P03/P01')
+    ax.set_xlabel('Fujo de Masa [kg/s]')
+    plt.show()
+    
+
     
     
     
