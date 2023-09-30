@@ -69,14 +69,15 @@ def calcP03(T1, P1, massFlux, psi, eta_c, omega = None, method='saravanamutto'):
     sigma = getSigma(U2)
     T01 = T1 + (Cx1**2)/(2*Cp*1000)
     P01 = P1 * ((T01/T1)**(k/(k-1)))
-    
+    h01 = (Cp*T01*1000) + Cx1**2 / 2
     print('Mach: ', M1, '-->', 'T1 estancamiento' ,T01)
     Mu = U2/speedSound(T01)
     if method == 'saravanamutto':
         P03_P01 = (1 + (eta_c*psi*sigma*U2**2)/(Cp*T01*1000))**(k/(k-1))
     elif method == 'dixon':    
         P03_P01 = (1 + ((k-1)*(sigma/psi)*(Mu**2)))**(k/(k-1))
-    #P03 = P03_P01*P01
+    #P03 = P03_P01*P01*+
+    h03 = psi*sigma*U2**2 + h01
     
     if omega == None:
         return P03_P01, omega
@@ -110,8 +111,42 @@ def getCompressorPerformancePlot(T1, P1, massFlux, omega, psi, eta_c):
     ax.set_xlabel('Fujo de Masa [kg/s]')
     plt.show()
     
+def getCompressorPower(omega, massFlux, psi):
+    
+    omega = omega*(np.pi*2/60) # Entra omega rpm
+    U2 = omega*r2
+    sigma = getSigma(U2[0])
+    omega = omega.reshape((1, len(omega)))
+    massFlux = massFlux.reshape((len(massFlux), 1)) # Entra el flujo de masa en kg/s
+    comp_power = (np.matmul(massFlux, omega**2))*sigma*psi*(r2**2)
+    
+    return comp_power
 
+def h03(T1, P1, massFlux, psi, eta_c, omega = None, method='saravanamutto'):
     
+    Cx1 = massFlux/(rho1*A1)
+    M1 = Cx1/speedSound(T1)
+    if M1 >= 0.3: 
+        pass
+        
+    if omega == None:
+        omega = getOmega(massFlux)
     
+    U2 = omega*r2
+    sigma = getSigma(U2)
+    T01 = T1 + (Cx1**2)/(2*Cp*1000)
+    P01 = P1 * ((T01/T1)**(k/(k-1)))
+    h01 = (Cp*T01*1000) + Cx1**2 / 2
+    print('Mach: ', M1, '-->', 'T1 estancamiento' ,T01)
+    Mu = U2/speedSound(T01)
+    if method == 'saravanamutto':
+        P03_P01 = (1 + (eta_c*psi*sigma*U2**2)/(Cp*T01*1000))**(k/(k-1))
+    elif method == 'dixon':    
+        P03_P01 = (1 + ((k-1)*(sigma/psi)*(Mu**2)))**(k/(k-1))
+    #P03 = P03_P01*P01*+
+    h03 = psi*sigma*U2**2 + h01
     
+    return h03
+
+
     
